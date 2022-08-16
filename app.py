@@ -146,7 +146,7 @@ def search_venues():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-    search_word = request.form.get('search', None)
+    search_word = request.form.get('search_term', None)
     searched_venue = Venue.query.filter(Venue.name.ilike(f'%{search_word}%'))
 
     data = []
@@ -157,7 +157,7 @@ def search_venues():
             'name': venue.name,
             'num_upcoming_shows': Show.query
             .filter(Show.venue_id == venue.id)
-            .filter(Show.start_date > datetime.now())
+            .filter(Show.start_time > datetime.now())
             .count()
         })
         print(data)
@@ -167,7 +167,7 @@ def search_venues():
         "data": data
     }
   
-    return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search', ''))
+    return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
@@ -297,7 +297,7 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
-    search_word = request.form.get('search', None)
+    search_word = request.form.get('search_term', None)
 
     searched_artist = Artist.query.filter(Artist.name.ilike(f'%{search_word}%'))
 
@@ -309,7 +309,7 @@ def search_artists():
             'name': result.name,
             'num_upcoming_shows': Show.query
             .filter(Show.artist_id == result.id)
-            .filter(Show.start_date > datetime.now())
+            .filter(Show.start_time > datetime.now())
             .count()
         })
         print(data)
@@ -318,7 +318,7 @@ def search_artists():
         "count": searched_artist.count(),
         "data": data
     }
-    return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search', ''))
+    return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
@@ -542,8 +542,8 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
-    form = ShowForm(request.form)
-  # try:
+  form = ShowForm(request.form)
+  try:
     new_show = Show(
       artist_id = form.artist_id.data,
       venue_id = form.venue_id.data,
@@ -553,11 +553,11 @@ def create_show_submission():
     db.session.commit()
   # on successful db insert, flash success
     flash('Show was successfully listed!')
-  # except:
+  except:
     flash('An error occurred. Show could not be listed.')
     # print(sys.exc_info())
     db.session.rollback()
-  # finally:
+  finally:
     db.session.close() 
     return render_template('pages/home.html')
 
